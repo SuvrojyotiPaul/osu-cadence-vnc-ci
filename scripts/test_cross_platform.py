@@ -185,14 +185,14 @@ def main():
     record("viewer-installed","PASS" if viewer.is_file() else "FAIL",str(viewer))
     if viewer.is_file():
         cmd=["cmd","/c",str(viewer),"-?"] if platform.system()=="Windows" else (
-            [str(viewer),"-?"] if platform.system()=="Darwin" else
+            ["/bin/sh",str(viewer),"-?"] if platform.system()=="Darwin" else
             ["xvfb-run","-a",str(viewer),"-help"])
         try:
             p=subprocess.run(cmd,capture_output=True,text=True,timeout=20,errors="replace")
             output=(p.stdout or "")+"\n"+(p.stderr or "")
             (REPORT/"viewer-cli.txt").write_text(output[:30000],encoding="utf-8")
-            record("viewer-cli","PASS" if ("usage" in output.lower() or "options" in output.lower()) and p.returncode in (0,1) else "WARN",f"Exit {p.returncode}; CLI output saved")
-        except Exception as e:record("viewer-cli","WARN",str(e))
+            record("viewer-cli","PASS" if ("usage" in output.lower() or "options" in output.lower()) and p.returncode in (0,1) else "FAIL",f"Exit {p.returncode}; CLI output saved")
+        except Exception as e:record("viewer-cli","FAIL",str(e))
     try:check_ssh()
     except Exception as e:
         record("openssh-forwarded-vnc","FAIL",repr(e))
